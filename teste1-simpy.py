@@ -20,5 +20,5 @@ def geraChegadas(env,nome,taxa, numeroMaxChegadas,tipo):
 
 random.seed(25) #semente do gerador de números aleatórios
 env = simpy.Environment() # ambiente de simulação
-env.process(geraChegadas(env, "Cliente", 2, 5, "arrival")) #cria o processo de chegadas de entidades
+env.process(geraChegadas(env, "Cliente", 2, 5, "singing")) #cria o processo de chegadas de entidades
 env.run(until=10) # roda a simulação por 10 unidades de tempo
