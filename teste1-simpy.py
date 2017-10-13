@@ -18,7 +18,7 @@ def geraChegadas(env,nome,taxa, numeroMaxChegadas,tipo):
 		contaChegada += 1
 		print "%s %i chega em %.1f" % (nome,contaChegada, env.now)
 
-random.seed(1000) #semente do gerador de números aleatórios
+random.seed(25) #semente do gerador de números aleatórios
 env = simpy.Environment() # ambiente de simulação
 env.process(geraChegadas(env, "Cliente", 2, 5, "arrival")) #cria o processo de chegadas de entidades
 env.run(until=10) # roda a simulação por 10 unidades de tempo
