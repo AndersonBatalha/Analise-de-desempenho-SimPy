@@ -18,4 +18,4 @@ def geraChegadas(env, nome, taxa):
 random.seed(1000) #semente para o gerador de números aleatórios, garante a sequência de números gerados será sempre a mesma
 env = simpy.Environment() # variável que representa o ambiente de simulação do SimPy
 env.process(geraChegadas(env, "Cliente", 2)) # cria o processo de chegadas definido pela função "geraChegadas"
-env.run(until=25) # executa a simulação por 10 unidades de tempo
+env.run(until=10) # executa a simulação por 10 unidades de tempo
