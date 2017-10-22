@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
 #  simpy-tutorial.py
+
+#Desafio 4: para melhor compreensão do funcionamento do programa, imprima na tela o tempo de simulação e o números de clientes em fila. Quantos clientes existem em fila no instante 4.5?
+
+#Desafio 5: calcule o tempo de permanência em fila de cada cliente e imprima o resultado na tela. Para isso, armazene o instante de chegada do cliente na fila em uma variável chegada. Ao final do atendimento, armazene o tempo de fila, numa variável tempoFila e apresente o resultado na tela.
 
 import random # módulo gerador de números aleatórios
 import simpy # biblioteca de simulação
@@ -20,11 +23,13 @@ def geraChegadas(env, nome, servidorRes):
 		env.process(atendimentoServidor(env, nome + " " + str(contaChegada), servidorRes)) #inicia o processo de atendimento (função atendimentoServidor)
 
 def atendimentoServidor(env, nome, servidor):
+	chegada = env.now # guarda o tempo de chegada na fila
 	request = servidor.request() #realiza uma requisição para utilizar o servidor
-	
 	yield request #aguarda até a liberação do recurso
 	
-	print "%.2f Servidor inicia o atendimento do %s" %(env.now, nome)
+	tempoFila = env.now - chegada
+	
+	print "%.2f Servidor inicia o atendimento do %s\nTempo do %s na fila: %.2f\n" %(env.now, nome, nome, tempoFila) #desafio 5
 	
 	yield env.timeout(TEMPO_MEDIO_ATENDIMENTO) #causa um atraso de tempo (env.timeout) de 0.5
 	
@@ -32,6 +37,8 @@ def atendimentoServidor(env, nome, servidor):
 	
 	yield servidor.release(request) #libera o recurso que estava ocupado
 
+	#desafio 4
+	print "\n%d clientes na fila\n" %(len(servidor.queue))
 
 random.seed(1000) #semente para o gerador de números aleatórios, garante a sequência de números gerados será sempre a mesma
 env = simpy.Environment() # variável que representa o ambiente de simulação do SimPy

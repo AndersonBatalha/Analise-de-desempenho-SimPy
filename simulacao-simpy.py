@@ -19,8 +19,8 @@ class Simulacao(object):
 		self.i = i
 		
 		while True:
-			self.i += 1
 			yield self.env.timeout(self.TEMPO_MEDIO_CHEGADA)
+			self.i += 1
 			print "\nCliente %d chegou em %.2f" %(self.i, self.env.now)
 			self.env.process(self.atendimento(1, "Cliente %d" %(self.i)))
 			
@@ -42,8 +42,8 @@ class Simulacao(object):
 
 
 env = simpy.Environment()
-s = simpy.Resource(env, capacity=1)
-sim = Simulacao(env, 15, s)
-env.process(sim.chegadaEntidades(2))
+s = simpy.Resource(env, capacity=2)
+sim = Simulacao(env, 20, s)
+env.process(sim.chegadaEntidades(0.5))
 sim.env.run(sim.tempoSimulacao)
 
