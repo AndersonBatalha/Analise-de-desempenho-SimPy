@@ -5,8 +5,9 @@ import random # gerador de números aleatórios
 import simpy # biblioteca de simulação
 
 class Estatisticas(object):
-	def __init__(self):
-		self.numero_servidor = -1
+	def __init__(self, tempo_simulacao):
+		self.tempo_simulacao = tempo_simulacao
+		self.servidor_livre = -1
 		self.tempos_fila = []
 		self.tempos_sistema = []
 		self.ocupacao_servidores = {"Servidor 1": [0, 0], "Servidor 2": [0, 0]}
@@ -14,15 +15,29 @@ class Estatisticas(object):
 		self.usuarios_no_sistema = [None, None]
 		self.temposFila = {}
 
-	def TemposVariavelClientesFila(self, tamanho_fila, peso):
+	def VerificaServidorLivre(self):
+		if self.usuarios_no_sistema[0] != None and self.usuarios_no_sistema[1] != None:
+			pass
+		else:
+			if self.usuarios_no_sistema[0] == None and self.usuarios_no_sistema[1] == None:
+				self.servidor_livre = random.randint(0,1)
+			elif self.usuarios_no_sistema[0] == None and self.usuarios_no_sistema[1] != None:
+				self.servidor_livre = 1
+			elif self.usuarios_no_sistema[0] != None and self.usuarios_no_sistema[1] == None:
+				self.servidor_livre = 2
+			return self.servidor_livre
+		return None
+
+	def TemposVariavelClientesFila(self, tamanho_fila, t):
 		self.tamanho_fila = tamanho_fila
-		self.peso = peso
+		self.t = t
 		
 		if self.tamanho_fila not in self.temposFila.keys():
-			self.temposFila[self.tamanho_fila] = self.peso
+			self.temposFila[self.tamanho_fila] = self.t
 		else:
-			self.temposFila[self.tamanho_fila] += self.peso
-		print self.temposFila
+			self.temposFila[self.tamanho_fila] += self.t
+		for i in range(len(self.temposFila)):
+			print "Tempo em que a variável 'número de clientes na fila' permaneceu em %d: %.2f (%.2f %%)" %(self.temposFila.keys()[i], self.temposFila.values()[i], (self.temposFila.values()[i] / self.tempo_simulacao) * 100)
 
 	def NumeroMedioClientesFila(self):
 		pass
@@ -64,7 +79,7 @@ class Estatisticas(object):
 
 class Simulacao(Estatisticas):
 	def __init__(self, env, servidor, tempo_simulacao):
-		Estatisticas.__init__(self)
+		Estatisticas.__init__(self, tempo_simulacao)
 		self.env = env
 		self.servidor = servidor
 		self.tempo_simulacao = tempo_simulacao
@@ -72,7 +87,6 @@ class Simulacao(Estatisticas):
 		self.tempos_chegada = {"0-5": [random.uniform(0,5), 35],"5-10": [random.uniform(5,10), 19],"10-15": [random.uniform(10,15), 19],"15-20": [random.uniform(15,20), 13],"20-25": [random.uniform(20,25), 3], "25-30": [random.uniform(25,30), 7], "30-35": [random.uniform(30, 35), 1], "35-40": [random.uniform(35,40), 2], "40-45": [random.uniform(40,45), 1]}
 
 		self.tempos_servico = {"9,5-10": [random.uniform(9.5,10), 6,5],"10-10,5": [random.uniform(10,10.5), 5,4],"10,5-11": [random.uniform(10.5,11), 23,15],"11-11,5": [random.uniform(11,11.5), 20,16],"11,5-12": [random.uniform(11.5,12), 21,23], "12-12,5": [random.uniform(12,12.5), 12,20], "12,5-13": [random.uniform(12.5, 13), 9,10], "13-13,5": [random.uniform(13,13.5), 2,5], "13,5-14": [random.uniform(13.5,14), 1,2]}
-		
 
 	def TempoChegada(self):
 		self.lista = []
@@ -100,6 +114,8 @@ class Simulacao(Estatisticas):
 	def Atendimento(self, n):
 		self.n = n
 
+		numero_elementos_fila = len(self.servidor.queue)
+
 		numero_servidor = random.randint(1,2)
 		t = self.TempoServico(numero_servidor)
 
@@ -110,13 +126,15 @@ class Simulacao(Estatisticas):
 
 		tempo_fila = self.env.now - chegada_fila
 
+		inicio = self.env.now
 		print "%.2f\tCliente %d iniciou atendimento" %(self.env.now, n)
 		yield self.env.timeout(t)
 		print "%.2f\tCliente %d finalizou atendimento" %(self.env.now, n)
+		total = self.env.now - inicio
 		
 		yield self.servidor.release(requisicao)
 		
-		self.TemposVariavelClientesFila(len(self.servidor.queue), t)
+		self.TemposVariavelClientesFila(numero_elementos_fila, total)
 		self.TempoTotalOcupacaoServidor(numero_servidor, t)
 		self.TempoTotalFila(tempo_fila)
 		self.TempoTotalSistema(t)
@@ -135,9 +153,6 @@ Tempo médio do cliente na fila: %.2f
 Tempo médio no sistema: %.2f
 
 Clientes atendidos: %d""" % (self.TaxaMediaOcupacaoServidor()[0], self.TaxaMediaOcupacaoServidor()[1], self.TempoMedioFila(), self.TempoMedioSistema(), self.TotalClientes())
-
-
-
 
 env = simpy.Environment()
 servidor = simpy.Resource(env, capacity=2)
