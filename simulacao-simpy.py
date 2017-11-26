@@ -129,7 +129,6 @@ Nov/2017
 			print "%.2f\tCliente %d chegou ao sistema\n" % (self.env.now, contador) # imprime o tempo de chegada (env.now)
 			fim = self.env.now
 			tempoAtendimento = fim - inicio
-			print "Numero de elementos na fila: ", len(self.servidor.queue),"\n"
 			self.TempoVariavelClientesFila(len(self.servidor.queue), tempoAtendimento)
 			self.env.process(self.Atendimento(contador)) # invoca a função que processa o atendimento
 
