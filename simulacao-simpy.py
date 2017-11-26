@@ -20,7 +20,7 @@ class Estatisticas(object):
 			pass
 		else:
 			if self.usuarios_no_sistema[0] == None and self.usuarios_no_sistema[1] == None:
-				self.servidor_livre = random.randint(0,1)
+				self.servidor_livre = random.randint(1,2)
 			elif self.usuarios_no_sistema[0] == None and self.usuarios_no_sistema[1] != None:
 				self.servidor_livre = 1
 			elif self.usuarios_no_sistema[0] != None and self.usuarios_no_sistema[1] == None:
@@ -36,8 +36,8 @@ class Estatisticas(object):
 			self.temposFila[self.tamanho_fila] = self.t
 		else:
 			self.temposFila[self.tamanho_fila] += self.t
-		for i in range(len(self.temposFila)):
-			print "Tempo em que a variável 'número de clientes na fila' permaneceu em %d: %.2f (%.2f %%)" %(self.temposFila.keys()[i], self.temposFila.values()[i], (self.temposFila.values()[i] / self.tempo_simulacao) * 100)
+		#~ for i in range(len(self.temposFila)):
+			#~ print "Tempo em que a variável 'número de clientes na fila' permaneceu em %d: %.2f (%.2f %%)" %(self.temposFila.keys()[i], self.temposFila.values()[i], (self.temposFila.values()[i] / self.tempo_simulacao) * 100)
 
 	def NumeroMedioClientesFila(self):
 		pass
@@ -112,33 +112,35 @@ class Simulacao(Estatisticas):
 			self.env.process(self.Atendimento(contador))
 
 	def Atendimento(self, n):
-		self.n = n
 
 		numero_elementos_fila = len(self.servidor.queue)
+		livre = self.VerificaServidorLivre()
 
-		numero_servidor = random.randint(1,2)
-		t = self.TempoServico(numero_servidor)
+		if livre == 1 or livre == 2:
+			t = self.TempoServico(livre)
 
-		requisicao = self.servidor.request()
-		chegada_fila = self.env.now
-		
-		yield requisicao
+			requisicao = self.servidor.request()
+			chegada_fila = self.env.now
+			self.usuarios_no_sistema[livre - 1] = requisicao
+			
+			yield requisicao
 
-		tempo_fila = self.env.now - chegada_fila
+			tempo_fila = self.env.now - chegada_fila
 
-		inicio = self.env.now
-		print "%.2f\tCliente %d iniciou atendimento" %(self.env.now, n)
-		yield self.env.timeout(t)
-		print "%.2f\tCliente %d finalizou atendimento" %(self.env.now, n)
-		total = self.env.now - inicio
-		
-		yield self.servidor.release(requisicao)
-		
-		self.TemposVariavelClientesFila(numero_elementos_fila, total)
-		self.TempoTotalOcupacaoServidor(numero_servidor, t)
-		self.TempoTotalFila(tempo_fila)
-		self.TempoTotalSistema(t)
-		self.ContaClientes()
+			inicio = self.env.now
+			print "%.2f\tCliente %d iniciou atendimento no Servidor %d" %(self.env.now, n, livre)
+			yield self.env.timeout(t)
+			print "%.2f\tCliente %d finalizou atendimento no Servidor %d" %(self.env.now, n, livre)
+			total = self.env.now - inicio
+			
+			self.usuarios_no_sistema[livre - 1] = None
+			yield self.servidor.release(requisicao)
+			
+			self.TemposVariavelClientesFila(numero_elementos_fila, total)
+			self.TempoTotalOcupacaoServidor(livre, t)
+			self.TempoTotalFila(tempo_fila)
+			self.TempoTotalSistema(t)
+			self.ContaClientes()
 		
 	def Resultados(self):
 		print """\n\n------------------------------ RESULTADOS ------------------------------\n
