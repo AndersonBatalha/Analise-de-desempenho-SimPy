@@ -12,25 +12,28 @@ class Estatisticas(object):
 		self.tempo_total_sistema = 0
 		self.numero_clientes_atendidos = 0
 		self.numero_medio_clientes_fila = 0
-		self.ocupacao_servidores = {"Servidor 1": [0, 0], "Servidor 2": [0, 0]}
 		self.tempos_variavel_fila = {}
+		self.ocupacao_servidores = {"Servidor 1": [0, 0], "Servidor 2": [0, 0]}
+		self.taxa_media_servidor1 = 0
+		self.taxa_media_servidor2 = 0
 
 	def TempoVariavelClientesFila(self, tamanho_fila, t):
 		self.tamanho_fila = tamanho_fila
 		self.t = t
 		
 		if self.tamanho_fila not in self.tempos_variavel_fila.keys():
-			self.tempos_variavel_fila[self.tamanho_fila] = self.t / self.tempo_simulacao
+			self.tempos_variavel_fila[self.tamanho_fila] = self.t
 		else:
-			self.tempos_variavel_fila[self.tamanho_fila] += self.t / self.tempo_simulacao
+			self.tempos_variavel_fila[self.tamanho_fila] += self.t
 
 	def NumeroMedioClientesFila(self):
 		soma_tempos = 0
 		for i in range(len(self.tempos_variavel_fila)):
-			soma_tempos += self.tempos_variavel_fila.keys()[i] * self.tempos_variavel_fila.values()[i]
-		return soma_tempos / self.TotalClientes()
+			soma_tempos += self.tempos_variavel_fila.keys()[i] * ((self.tempos_variavel_fila.values()[i] / self.tempo_simulacao) * 100)
+		return soma_tempos / self.tempo_simulacao
 
 	def TempoTotalOcupacaoServidor(self, numero_servidor, tempoOcupado):
+		self.numero_servidor = numero_servidor
 		self.tempoOcupado = tempoOcupado
 
 		if self.numero_servidor == 1:
@@ -41,23 +44,35 @@ class Estatisticas(object):
 			self.ocupacao_servidores["Servidor 2"][1] += 1
 
 	def TaxaMediaOcupacaoServidor(self):
-		taxa_media_servidor1 = self.ocupacao_servidores["Servidor 1"][0] / self.ocupacao_servidores["Servidor 1"][1]
-		taxa_media_servidor2 = self.ocupacao_servidores["Servidor 2"][0] / self.ocupacao_servidores["Servidor 2"][1]
-		return (taxa_media_servidor1, taxa_media_servidor2)
+		if self.ocupacao_servidores["Servidor 1"][1] == 0 and self.ocupacao_servidores["Servidor 2"][1] == 0:
+			return (0, 0)
+		else:
+			if self.ocupacao_servidores["Servidor 1"][1] == 0:
+				return (0, self.ocupacao_servidores["Servidor 2"][0] / self.ocupacao_servidores["Servidor 2"][1])
+			elif self.ocupacao_servidores["Servidor 2"][1] == 0:
+				return (self.ocupacao_servidores["Servidor 1"][0] / self.ocupacao_servidores["Servidor 1"][1], 0)
+			else:
+				return (self.ocupacao_servidores["Servidor 1"][0] / self.ocupacao_servidores["Servidor 1"][1], self.ocupacao_servidores["Servidor 2"][0] / self.ocupacao_servidores["Servidor 2"][1])
 
 	def TempoTotalFila(self, tempoFila):
 		self.tempoFila = tempoFila
 		self.tempo_total_fila += self.tempoFila
 
 	def TempoMedioFila(self):
-		return self.tempo_total_fila / self.TotalClientes()
+		if self.TotalClientes() > 0:
+			return self.tempo_total_fila / self.TotalClientes()
+		else:
+			return self.tempo_total_fila
 
 	def TempoTotalSistema(self, tempoAtendimento):
 		self.tempoAtendimento = tempoAtendimento
 		self.tempo_total_sistema += self.tempoAtendimento
 
 	def TempoMedioSistema(self):
-		return self.tempo_total_sistema / self.TotalClientes()
+		if self.TotalClientes() > 0:
+			return self.tempo_total_sistema / self.TotalClientes()
+		else:
+			return self.tempo_total_sistema
 	
 	def ContaClientes(self):
 		self.numero_clientes_atendidos += 1
@@ -81,18 +96,6 @@ class Simulacao(Estatisticas):
 		self.usuarios_no_sistema = [None, None] # lista que representa os servidores disponíveis
 
 		self.tempo_total = 0
-
-	def __str__(self):
-		print """
-		
-Simulação de eventos com SimPy - versão 1.0
-Desenvolvido por Anderson P. Batalha
-Análise de desempenho de sistemas
-IFC Araquari
-Nov/2017
-
-
-"""
 
 	def VerificaServidorLivre(self): # método que verifica qual servidor está disponível
 		if self.usuarios_no_sistema[0] == None and self.usuarios_no_sistema[1] == None:
@@ -166,7 +169,6 @@ Nov/2017
 			Para cada atendimento, o valor da variável é incrementado para obter o tempo total de ocupação dos servidores, tempo total na fila e o tempo total no sistema
 			"""
 
-			#~ self.TemposVariavelClientesFila(len(self.servidor.queue), tempoAtendimento)
 			self.TempoTotalOcupacaoServidor(servidorlivre, tempoAtendimento)
 			self.TempoTotalFila(tempo_fila)
 			self.TempoTotalSistema(tempoAtendimento)
@@ -175,7 +177,7 @@ Nov/2017
 
 	def Resultados(self): # exibe os resultados da simulação
 		print """\n\n------------------------------ RESULTADOS ------------------------------\n
-Número médio de clientes na fila: %.6f
+Número médio de clientes na fila: %.10f
 
 Taxa média de ocupação dos servidores:
 	Servidor 1: %.2f
@@ -195,8 +197,7 @@ Clientes atendidos: %d
 env = simpy.Environment()
 servidor = simpy.Resource(env, capacity=2)
 
-S = Simulacao(env, servidor, 500)
-S.__str__()
+S = Simulacao(env, servidor, 1000)
 
 env.process(S.Chegadas())
 env.run(until=S.tempo_simulacao)
