@@ -32,27 +32,31 @@ class Estatisticas(object):
 			soma_tempos += self.tempos_variavel_fila.keys()[i] * ((self.tempos_variavel_fila.values()[i] / self.tempo_simulacao) * 100)
 		return soma_tempos / self.tempo_simulacao
 
-	def TempoTotalOcupacaoServidor(self, numero_servidor, tempoOcupado):
-		self.numero_servidor = numero_servidor
+	def TempoTotalOcupacaoServidor(self, tempoOcupado):
 		self.tempoOcupado = tempoOcupado
 
-		if self.numero_servidor == 1:
+		if self.servidor_livre == 1:
 			self.ocupacao_servidores["Servidor 1"][0] += self.tempoOcupado
 			self.ocupacao_servidores["Servidor 1"][1] += 1
-		elif self.numero_servidor == 2:
+		elif self.servidor_livre == 2:
 			self.ocupacao_servidores["Servidor 2"][0] += self.tempoOcupado
 			self.ocupacao_servidores["Servidor 2"][1] += 1
 
 	def TaxaMediaOcupacaoServidor(self):
-		if self.ocupacao_servidores["Servidor 1"][1] == 0 and self.ocupacao_servidores["Servidor 2"][1] == 0:
-			return (0, 0)
-		else:
-			if self.ocupacao_servidores["Servidor 1"][1] == 0:
-				return (0, self.ocupacao_servidores["Servidor 2"][0] / self.ocupacao_servidores["Servidor 2"][1])
-			elif self.ocupacao_servidores["Servidor 2"][1] == 0:
-				return (self.ocupacao_servidores["Servidor 1"][0] / self.ocupacao_servidores["Servidor 1"][1], 0)
+		try:
+			self.taxa_media_servidor1 = self.ocupacao_servidores["Servidor 1"][0] / self.ocupacao_servidores["Servidor 1"][1]
+			self.taxa_media_servidor2 = self.ocupacao_servidores["Servidor 2"][0] / self.ocupacao_servidores["Servidor 2"][1]
+			return (self.taxa_media_servidor1, self.taxa_media_servidor2)
+		except ZeroDivisionError:
+			if self.ocupacao_servidores["Servidor 1"][1] == 0 and self.ocupacao_servidores["Servidor 2"][1] == 0:
+				return (0, 0)
 			else:
-				return (self.ocupacao_servidores["Servidor 1"][0] / self.ocupacao_servidores["Servidor 1"][1], self.ocupacao_servidores["Servidor 2"][0] / self.ocupacao_servidores["Servidor 2"][1])
+				if self.ocupacao_servidores["Servidor 1"][1] == 0:
+					self.taxa_media_servidor2 = self.ocupacao_servidores["Servidor 2"][0] / self.ocupacao_servidores["Servidor 2"][1]
+					return (0, self.taxa_media_servidor2)
+				elif self.ocupacao_servidores["Servidor 2"][1] == 0:
+					self.taxa_media_servidor1 = self.ocupacao_servidores["Servidor 1"][0] / self.ocupacao_servidores["Servidor 1"][1]
+					return (self.taxa_media_servidor1, 0)
 
 	def TempoTotalFila(self, tempoFila):
 		self.tempoFila = tempoFila
@@ -96,6 +100,13 @@ class Simulacao(Estatisticas):
 		self.usuarios_no_sistema = [None, None] # lista que representa os servidores disponíveis
 
 		self.tempo_total = 0
+		print self.__str__()
+
+	def __str__(self):
+		return """
+Simulação de Sistema com Dois Servidores
+Análise e Desempenho de Sistemas – 2017/2
+"""
 
 	def VerificaServidorLivre(self): # método que verifica qual servidor está disponível
 		if self.usuarios_no_sistema[0] == None and self.usuarios_no_sistema[1] == None:
@@ -169,7 +180,7 @@ class Simulacao(Estatisticas):
 			Para cada atendimento, o valor da variável é incrementado para obter o tempo total de ocupação dos servidores, tempo total na fila e o tempo total no sistema
 			"""
 
-			self.TempoTotalOcupacaoServidor(servidorlivre, tempoAtendimento)
+			self.TempoTotalOcupacaoServidor(tempoAtendimento)
 			self.TempoTotalFila(tempo_fila)
 			self.TempoTotalSistema(tempoAtendimento)
 
@@ -177,15 +188,15 @@ class Simulacao(Estatisticas):
 
 	def Resultados(self): # exibe os resultados da simulação
 		print """\n\n------------------------------ RESULTADOS ------------------------------\n
-Número médio de clientes na fila: %.10f
+Número médio de clientes na fila: %f
 
 Taxa média de ocupação dos servidores:
-	Servidor 1: %.2f
-	Servidor 2: %.2f
+	Servidor 1: %f
+	Servidor 2: %f
 
-Tempo médio do cliente na fila: %.2f
+Tempo médio do cliente na fila: %f
 
-Tempo médio no sistema: %.2f
+Tempo médio no sistema: %f
 
 Clientes atendidos: %d
 
@@ -197,7 +208,7 @@ Clientes atendidos: %d
 env = simpy.Environment()
 servidor = simpy.Resource(env, capacity=2)
 
-S = Simulacao(env, servidor, 1000)
+S = Simulacao(env, servidor, 250)
 
 env.process(S.Chegadas())
 env.run(until=S.tempo_simulacao)
