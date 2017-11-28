@@ -196,7 +196,7 @@ Análise e Desempenho de Sistemas – 2017/2
 		self.ContaClientes() # conta quantos clientes chegaram no sistema e foram atendidos
 
 	def Resultados(self): # exibe os resultados da simulação
-		print """\n\n------------------------------ RESULTADOS ------------------------------\n
+		print """------------------------------ RESULTADOS ------------------------------\n
 Número médio de clientes na fila: %f
 
 Taxa média de ocupação dos servidores:
@@ -213,10 +213,12 @@ Clientes atendidos: %d
 
 """ % (self.NumeroMedioClientesFila(), self.TaxaMediaOcupacaoServidor()[0], self.TaxaMediaOcupacaoServidor()[1], self.TempoMedioFila(), self.TempoMedioSistema(), self.TotalClientes())
 
+tempo_simulado = int(raw_input("Informe o tempo de simulação: "))
+
 env = simpy.Environment() # cria o ambiente de simulação
 servidor = simpy.Resource(env, capacity=2) # cria uma variável para representar o recurso a ser ocupado (o servidor)
 
-S = Simulacao(env, servidor, 250) # cria uma instância da classe
+S = Simulacao(env, servidor, tempo_simulado) # cria uma instância da classe
 
 env.process(S.Chegadas()) # inclui o processo de chegadas como parte do processo de simulação
 env.run(until=S.tempo_simulacao) # executa a simulação por um determinado período de tempo
