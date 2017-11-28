@@ -9,14 +9,13 @@ class Estatisticas(object):
 		self.tempo_simulacao = tempo_simulacao 
 		self.servidor_livre = -1 # indica qual servidor está livre
 		self.numero_clientes_atendidos = 0 # conta o número de atendimentos
+		self.numero_chegadas = 0 # conta o número de chegadas de clientes
 		self.tempo_total_fila = 0 # tempo total dos clientes na fila
 		self.tempo_total_sistema = 0 # tempo total dos clientes no sistema
-		self.numero_medio_clientes_fila = 0 # 
 		self.taxa_media_servidor1 = 0 # calcula a taxa de ocupação do servidor 1
 		self.taxa_media_servidor2 = 0 # calcula a taxa de ocupação do servidor 2
 		self.tempos_variavel_fila = {} # calcula o tempo em que a variável da fila esteve em um determinado valor
 		self.ocupacao_servidores = {"Servidor 1": [0, 0], "Servidor 2": [0, 0]} # cria um dicionário para registrar o tempo total de ocupação do servidor, e quantos clientes foram atendidos
-
 
 	# para cada atendimento, incrementa uma variável que mede o tempo em que a variável da fila esteve em um determinado valor
 	def TempoTotalVariavelClientesFila(self, tamanho_fila, tempo_da_variavel):
@@ -27,13 +26,16 @@ class Estatisticas(object):
 			self.tempos_variavel_fila[self.tamanho_fila] = self.tempo_da_variavel
 		else:
 			self.tempos_variavel_fila[self.tamanho_fila] += self.tempo_da_variavel
-	
+
 	# retorna o número médio de clientes na fila
 	def NumeroMedioClientesFila(self):
+		print self.tempos_variavel_fila
 		soma_tempos = 0
+		# para cada par chave-valor no dicionário, multiplica o número de clientes na fila por seu percentual em relação ao tempo total
 		for i in range(len(self.tempos_variavel_fila)):
-			soma_tempos += self.tempos_variavel_fila.keys()[i] * self.tempos_variavel_fila.values()[i]
-		return soma_tempos / self.tempo_simulacao
+			soma_tempos += self.tempos_variavel_fila.keys()[i] * ((self.tempos_variavel_fila.values()[i] / self.tempo_simulacao) * 100)
+		# retorna o valor médio
+		return soma_tempos / self.TotalChegadas()
 
 	# para cada atendimento, incrementa uma variável que mede o tempo total de ocupação de cada um dos servidores
 	def TempoTotalOcupacaoServidor(self, tempoOcupado):
@@ -88,12 +90,20 @@ class Estatisticas(object):
 			return self.tempo_total_sistema
 
 	# para cada atendimento, incrementa uma variável que mede o número de clientes atendidos
-	def ContaClientes(self):
+	def ContaAtendimentos(self):
 		self.numero_clientes_atendidos += 1
 	
 	# retorna o total de clientes atendidos
 	def TotalClientes(self):
 		return self.numero_clientes_atendidos
+
+	# para cada atendimento, incrementa uma variável que mede o número de chegadas de clientes
+	def ContaChegadas(self):
+		self.numero_chegadas += 1
+	
+	# retorna o total de chegadas de clientes
+	def TotalChegadas(self):
+		return self.numero_chegadas
 
 class Simulacao(Estatisticas):
 
@@ -148,16 +158,15 @@ Análise e Desempenho de Sistemas – 2017/2
 		return self.tempos_servico[random.choice(self.lista)][0] # retorna o tempo de serviço
 
 	def Chegadas(self):
-		contador = 0
 		while True: # executa o processo de chegadas de clientes enquanto a simulação estiver ocorrendo
 			inicio = self.env.now
-			contador += 1 # incrementa um contador de chegadas
+			self.ContaChegadas() # incrementa um contador de chegadas
 			yield self.env.timeout(self.TempoChegada()) # env.timeout causa um atraso de tempo definido pela função TempoChegada()
-			print "%.2f\tCliente %d chegou ao sistema\n" % (self.env.now, contador) # imprime o tempo de chegada (env.now)
+			print "%.2f\tCliente %d chegou ao sistema\n" % (self.env.now, self.TotalChegadas()) # imprime o tempo de chegada (env.now)
 			fim = self.env.now
 			tempo = fim - inicio
 			self.TempoTotalVariavelClientesFila(len(self.servidor.queue), tempo)
-			self.env.process(self.Atendimento(contador)) # invoca a função que processa o atendimento
+			self.env.process(self.Atendimento(self.TotalChegadas())) # invoca a função que processa o atendimento
 
 	def Atendimento(self, numeroCliente):
 		servidorlivre = self.VerificaServidorLivre() #verifica qual servidor está livre
@@ -193,7 +202,7 @@ Análise e Desempenho de Sistemas – 2017/2
 			self.TempoTotalFila(tempo_fila)
 			self.TempoTotalSistema(tempoAtendimento)
 
-		self.ContaClientes() # conta quantos clientes chegaram no sistema e foram atendidos
+		self.ContaAtendimentos() # conta quantos clientes chegaram no sistema e foram atendidos
 
 	def Resultados(self): # exibe os resultados da simulação
 		print """------------------------------ RESULTADOS ------------------------------\n
@@ -207,11 +216,13 @@ Tempo médio do cliente na fila: %f
 
 Tempo médio no sistema: %f
 
+Clientes que chegaram ao sistema: %d
+
 Clientes atendidos: %d
 
 ------------------------------------------------------------------------
 
-""" % (self.NumeroMedioClientesFila(), self.TaxaMediaOcupacaoServidor()[0], self.TaxaMediaOcupacaoServidor()[1], self.TempoMedioFila(), self.TempoMedioSistema(), self.TotalClientes())
+""" % (self.NumeroMedioClientesFila(), self.TaxaMediaOcupacaoServidor()[0], self.TaxaMediaOcupacaoServidor()[1], self.TempoMedioFila(), self.TempoMedioSistema(), self.TotalChegadas(), self.TotalClientes())
 
 tempo_simulado = int(raw_input("Informe o tempo de simulação: "))
 
