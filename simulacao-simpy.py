@@ -29,7 +29,6 @@ class Estatisticas(object):
 
 	# retorna o número médio de clientes na fila
 	def NumeroMedioClientesFila(self):
-		print self.tempos_variavel_fila
 		soma_tempos = 0
 		# para cada par chave-valor no dicionário, multiplica o número de clientes na fila por seu percentual em relação ao tempo total
 		for i in range(len(self.tempos_variavel_fila)):
