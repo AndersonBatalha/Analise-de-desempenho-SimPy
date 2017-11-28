@@ -7,16 +7,16 @@ import simpy # biblioteca de simulação
 class Estatisticas(object):
 	def __init__(self, tempo_simulacao):
 		self.tempo_simulacao = tempo_simulacao 
-		self.servidor_livre = -1
+		self.servidor_livre = -1 # indica qual servidor está livre
 		self.numero_clientes_atendidos = 0 # conta o número de atendimentos
 		self.tempo_total_fila = 0 # tempo total dos clientes na fila
 		self.tempo_total_sistema = 0 # tempo total dos clientes no sistema
-		self.numero_medio_clientes_fila = 0
+		self.numero_medio_clientes_fila = 0 # 
 		self.taxa_media_servidor1 = 0 # calcula a taxa de ocupação do servidor 1
 		self.taxa_media_servidor2 = 0 # calcula a taxa de ocupação do servidor 2
 		self.tempos_variavel_fila = {} # calcula o tempo em que a variável da fila esteve em um determinado valor
-		# cria um dicionário para registrar o tempo total de ocupação do servidor, e quantos clientes foram atendidos
-		self.ocupacao_servidores = {"Servidor 1": [0, 0], "Servidor 2": [0, 0]}
+		self.ocupacao_servidores = {"Servidor 1": [0, 0], "Servidor 2": [0, 0]} # cria um dicionário para registrar o tempo total de ocupação do servidor, e quantos clientes foram atendidos
+
 
 	# para cada atendimento, incrementa uma variável que mede o tempo em que a variável da fila esteve em um determinado valor
 	def TempoTotalVariavelClientesFila(self, tamanho_fila, tempo_da_variavel):
@@ -102,7 +102,7 @@ class Simulacao(Estatisticas):
 
 		self.env = env # cria o ambiente de simulação
 		self.servidor = servidor # cria uma variável para representar o recurso a ser ocupado (o servidor)
-		self.tempo_simulacao = tempo_simulacao
+		self.tempo_simulacao = tempo_simulacao # tempo total de simulação
 
 		# dicionário armazena os tempos de chegada, e suas probabilidades, além da função random.uniform, que gera números aleatórios de ponto flutuante (ver descrição da atividade --> tabela 1)
 		self.tempos_chegada = {"0-5": [random.uniform(0,5), 35],"5-10": [random.uniform(5,10), 19],"10-15": [random.uniform(10,15), 19],"15-20": [random.uniform(15,20), 13],"20-25": [random.uniform(20,25), 3], "25-30": [random.uniform(25,30), 7], "30-35": [random.uniform(30, 35), 1], "35-40": [random.uniform(35,40), 2], "40-45": [random.uniform(40,45), 1]}
@@ -175,9 +175,7 @@ Análise e Desempenho de Sistemas – 2017/2
 
 			# exibe início e término do atendimento
 			print "%.2f\tCliente %d iniciou atendimento no Servidor %d\n" %(self.env.now, numeroCliente, servidorlivre)
-
 			yield self.env.timeout(tempoAtendimento)
-
 			print "%.2f\tCliente %d finalizou atendimento no Servidor %d\n" %(self.env.now, numeroCliente, servidorlivre)
 			
 			# desocupa o servidor
@@ -189,8 +187,8 @@ Análise e Desempenho de Sistemas – 2017/2
 			# - tempo médio na fila
 			# - tempo médio no sistema
 
-			#Para cada atendimento, o valor da variável é incrementado para obter o tempo total de ocupação dos servidores, tempo total na fila e o tempo total no sistema
-
+			# Para cada atendimento, o valor da variável é incrementado para obter o tempo total de ocupação dos servidores, tempo total na fila e o tempo total no sistema
+ 
 			self.TempoTotalOcupacaoServidor(tempoAtendimento)
 			self.TempoTotalFila(tempo_fila)
 			self.TempoTotalSistema(tempoAtendimento)
