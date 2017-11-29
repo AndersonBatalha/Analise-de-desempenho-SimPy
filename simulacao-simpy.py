@@ -226,13 +226,12 @@ Clientes atendidos: %d
 
 """ % (self.NumeroMedioClientesFila(), self.TaxaMediaOcupacaoServidor()[0], self.TaxaMediaOcupacaoServidor()[1], self.TempoMedioFila(), self.TempoMedioSistema(), self.TotalChegadas(), self.TotalClientes())
 
-#~ tempo_simulado = int(raw_input("\nInforme o tempo de simulação: "))
+tempo_simulado = int(raw_input("\nInforme o tempo de simulação: "))
 
 env = simpy.Environment() # cria o ambiente de simulação
 servidor = simpy.Resource(env, capacity=2) # cria uma variável para representar o recurso a ser ocupado (o servidor)
 
-#~ S = Simulacao(env, servidor, tempo_simulado) # cria uma instância da classe
-S = Simulacao(env, servidor, 250) # cria uma instância da classe
+S = Simulacao(env, servidor, tempo_simulado) # cria uma instância da classe
 
 env.process(S.Chegadas()) # inclui o processo de chegadas como parte do processo de simulação
 env.run(until=S.tempo_simulacao) # executa a simulação por um determinado período de tempo
