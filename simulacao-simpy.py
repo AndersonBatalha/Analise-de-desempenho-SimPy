@@ -120,7 +120,6 @@ Análise e Desempenho de Sistemas – 2017/2
         self.tempo_simulacao = tempo_simulacao # tempo total de simulação
 
         # dicionário armazena os tempos de chegada, e suas probabilidades, além da função random.uniform, que gera números aleatórios de ponto flutuante (ver descrição da atividade --> tabela 1)
-        #~ self.tempos_chegada = {"0-5": [random.uniform(0,5), 35],"5-10": [random.uniform(5,10), 19],"10-15": [random.uniform(10,15), 19],"15-20": [random.uniform(15,20), 13],"20-25": [random.uniform(20,25), 3], "25-30": [random.uniform(25,30), 7], "30-35": [random.uniform(30, 35), 1], "35-40": [random.uniform(35,40), 2], "40-45": [random.uniform(40,45), 1]}
         self.tempos_chegada = {(0,5): [random.uniform(0,5), 35],(5,10): [random.uniform(5,10), 19], (10,15): [random.uniform(10,15), 19],(15,20): [random.uniform(15,20), 13],(20,25): [random.uniform(20,25), 3], (25,30): [random.uniform(25,30), 7], (30, 35): [random.uniform(30, 35), 1], (35,40): [random.uniform(35,40), 2], (40,45): [random.uniform(40,45), 1]}
 
         # dicionário armazena os tempos de serviço, e suas probabilidades, além da função random.uniform, que gera números aleatórios de ponto flutuante (ver descrição da atividade --> tabela 2)
@@ -138,8 +137,6 @@ Análise e Desempenho de Sistemas – 2017/2
         random.shuffle(self.lista) # embaralha a lista para obter um valor aleatório
         valores_escolhidos = random.choice(self.lista)
         tempo = random.uniform(valores_escolhidos[0], valores_escolhidos[1])
-        print "Tempo de chegada", tempo
-        #~ return random.uniform(valores_escolhidos[0], valores_escolhidos[1])
         return tempo
 
     def TempoServico(self, numero_servidor):
@@ -151,8 +148,6 @@ Análise e Desempenho de Sistemas – 2017/2
         random.shuffle(self.lista) # embaralha a lista para obter um valor aleatório
         valores_escolhidos = random.choice(self.lista)
         tempo = random.uniform(valores_escolhidos[0], valores_escolhidos[1])
-        print "Tempo de serviço", tempo
-        #~ return random.uniform(valores_escolhidos[0], valores_escolhidos[1])
         return tempo
 
     def Chegadas(self):
