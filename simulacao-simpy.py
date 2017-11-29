@@ -162,7 +162,7 @@ Análise e Desempenho de Sistemas – 2017/2
             yield self.env.timeout(self.TempoChegada()) # env.timeout causa um atraso de tempo definido pela função TempoChegada()
             print "%.2f\tCliente %d chegou ao sistema\n" % (self.env.now, self.TotalChegadas()) # imprime o tempo de chegada (env.now)
             fim = self.env.now
-            tempo = fim - inicio
+            tempo = fim - inicio # conta o tempo decorrido em que a variável referente a fila esteve em um determinado valor
             self.TempoTotalVariavelClientesFila(len(self.servidor.queue), tempo)
             self.env.process(self.Atendimento(self.TotalChegadas())) # invoca a função que processa o atendimento
 
@@ -222,7 +222,7 @@ Clientes atendidos: %d
 
 """ % (self.NumeroMedioClientesFila(), self.TaxaMediaOcupacaoServidor()[0], self.TaxaMediaOcupacaoServidor()[1], self.TempoMedioFila(), self.TempoMedioSistema(), self.TotalChegadas(), self.TotalClientes())
 
-tempo_simulado = int(raw_input("Informe o tempo de simulação: "))
+tempo_simulado = int(raw_input("\nInforme o tempo de simulação: "))
 
 env = simpy.Environment() # cria o ambiente de simulação
 servidor = simpy.Resource(env, capacity=2) # cria uma variável para representar o recurso a ser ocupado (o servidor)
