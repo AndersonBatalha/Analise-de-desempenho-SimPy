@@ -106,6 +106,12 @@ class Estatisticas(object):
 
 class Simulacao(Estatisticas):
 
+    def __str__(self):
+        return """
+Simulação de Sistema com Dois Servidores
+Análise e Desempenho de Sistemas – 2017/2
+"""
+
     def __init__(self, env, servidor, tempo_simulacao):
         Estatisticas.__init__(self, tempo_simulacao)
 
@@ -114,29 +120,15 @@ class Simulacao(Estatisticas):
         self.tempo_simulacao = tempo_simulacao # tempo total de simulação
 
         # dicionário armazena os tempos de chegada, e suas probabilidades, além da função random.uniform, que gera números aleatórios de ponto flutuante (ver descrição da atividade --> tabela 1)
-        self.tempos_chegada = {"0-5": [random.uniform(0,5), 35],"5-10": [random.uniform(5,10), 19],"10-15": [random.uniform(10,15), 19],"15-20": [random.uniform(15,20), 13],"20-25": [random.uniform(20,25), 3], "25-30": [random.uniform(25,30), 7], "30-35": [random.uniform(30, 35), 1], "35-40": [random.uniform(35,40), 2], "40-45": [random.uniform(40,45), 1]}
+        #~ self.tempos_chegada = {"0-5": [random.uniform(0,5), 35],"5-10": [random.uniform(5,10), 19],"10-15": [random.uniform(10,15), 19],"15-20": [random.uniform(15,20), 13],"20-25": [random.uniform(20,25), 3], "25-30": [random.uniform(25,30), 7], "30-35": [random.uniform(30, 35), 1], "35-40": [random.uniform(35,40), 2], "40-45": [random.uniform(40,45), 1]}
+        self.tempos_chegada = {(0,5): [random.uniform(0,5), 35],(5,10): [random.uniform(5,10), 19], (10,15): [random.uniform(10,15), 19],(15,20): [random.uniform(15,20), 13],(20,25): [random.uniform(20,25), 3], (25,30): [random.uniform(25,30), 7], (30, 35): [random.uniform(30, 35), 1], (35,40): [random.uniform(35,40), 2], (40,45): [random.uniform(40,45), 1]}
 
         # dicionário armazena os tempos de serviço, e suas probabilidades, além da função random.uniform, que gera números aleatórios de ponto flutuante (ver descrição da atividade --> tabela 2)
-        self.tempos_servico = {"9,5-10": [random.uniform(9.5,10), 6,5],"10-10,5": [random.uniform(10,10.5), 5,4],"10,5-11": [random.uniform(10.5,11), 23,15],"11-11,5": [random.uniform(11,11.5), 20,16],"11,5-12": [random.uniform(11.5,12), 21,23], "12-12,5": [random.uniform(12,12.5), 12,20], "12,5-13": [random.uniform(12.5, 13), 9,10], "13-13,5": [random.uniform(13,13.5), 2,5], "13,5-14": [random.uniform(13.5,14), 1,2]}
+        self.tempos_servico = {(9.5,10): [random.uniform(9.5,10), 6,5],(10,10.5): [random.uniform(10,10.5), 5,4],(10.5,11): [random.uniform(10.5,11), 23,15],(11,11.5): [random.uniform(11,11.5), 20,16],(11.5,12): [random.uniform(11.5,12), 21,23], (12,12.5): [random.uniform(12,12.5), 12,20], (12.5, 13): [random.uniform(12.5, 13), 9,10], (13,13.5): [random.uniform(13,13.5), 2,5], (13.5,14): [random.uniform(13.5,14), 1,2]}
 
         self.usuarios_no_sistema = [None, None] # lista que representa os servidores disponíveis
 
         print self.__str__()
-
-    def __str__(self):
-        return """
-Simulação de Sistema com Dois Servidores
-Análise e Desempenho de Sistemas – 2017/2
-"""
-
-    def VerificaServidorLivre(self): # método que verifica qual servidor está disponível
-        if self.usuarios_no_sistema[0] == None and self.usuarios_no_sistema[1] == None:
-            self.servidor_livre = random.randint(1,2)
-        elif self.usuarios_no_sistema[0] == None and self.usuarios_no_sistema[1] != None:
-            self.servidor_livre = 1
-        elif self.usuarios_no_sistema[0] != None and self.usuarios_no_sistema[1] == None:
-            self.servidor_livre = 2
-        return self.servidor_livre
 
     def TempoChegada(self):
         self.lista = []
@@ -144,7 +136,11 @@ Análise e Desempenho de Sistemas – 2017/2
         for i in range(len(self.tempos_chegada)):
             self.lista += [self.tempos_chegada.keys()[i]] * self.tempos_chegada.values()[i][1]
         random.shuffle(self.lista) # embaralha a lista para obter um valor aleatório
-        return self.tempos_chegada[random.choice(self.lista)][0] # retorna o tempo de chegada
+        valores_escolhidos = random.choice(self.lista)
+        tempo = random.uniform(valores_escolhidos[0], valores_escolhidos[1])
+        print "Tempo de chegada", tempo
+        #~ return random.uniform(valores_escolhidos[0], valores_escolhidos[1])
+        return tempo
 
     def TempoServico(self, numero_servidor):
         self.numero_servidor = numero_servidor
@@ -153,7 +149,11 @@ Análise e Desempenho de Sistemas – 2017/2
         for i in range(len(self.tempos_servico)):
             self.lista += [self.tempos_servico.keys()[i]] * self.tempos_servico.values()[i][self.numero_servidor]
         random.shuffle(self.lista) # embaralha a lista para obter um valor aleatório
-        return self.tempos_servico[random.choice(self.lista)][0] # retorna o tempo de serviço
+        valores_escolhidos = random.choice(self.lista)
+        tempo = random.uniform(valores_escolhidos[0], valores_escolhidos[1])
+        print "Tempo de serviço", tempo
+        #~ return random.uniform(valores_escolhidos[0], valores_escolhidos[1])
+        return tempo
 
     def Chegadas(self):
         while True: # executa o processo de chegadas de clientes enquanto a simulação estiver ocorrendo
@@ -202,6 +202,15 @@ Análise e Desempenho de Sistemas – 2017/2
 
         self.ContaAtendimentos() # conta quantos clientes chegaram no sistema e foram atendidos
 
+    def VerificaServidorLivre(self): # método que verifica qual servidor está disponível
+        if self.usuarios_no_sistema[0] == None and self.usuarios_no_sistema[1] == None:
+            self.servidor_livre = random.randint(1,2)
+        elif self.usuarios_no_sistema[0] == None and self.usuarios_no_sistema[1] != None:
+            self.servidor_livre = 1
+        elif self.usuarios_no_sistema[0] != None and self.usuarios_no_sistema[1] == None:
+            self.servidor_livre = 2
+        return self.servidor_livre
+
     def Resultados(self): # exibe os resultados da simulação
         print """------------------------------ RESULTADOS ------------------------------\n
 Número médio de clientes na fila: %f
@@ -222,12 +231,13 @@ Clientes atendidos: %d
 
 """ % (self.NumeroMedioClientesFila(), self.TaxaMediaOcupacaoServidor()[0], self.TaxaMediaOcupacaoServidor()[1], self.TempoMedioFila(), self.TempoMedioSistema(), self.TotalChegadas(), self.TotalClientes())
 
-tempo_simulado = int(raw_input("\nInforme o tempo de simulação: "))
+#~ tempo_simulado = int(raw_input("\nInforme o tempo de simulação: "))
 
 env = simpy.Environment() # cria o ambiente de simulação
 servidor = simpy.Resource(env, capacity=2) # cria uma variável para representar o recurso a ser ocupado (o servidor)
 
-S = Simulacao(env, servidor, tempo_simulado) # cria uma instância da classe
+#~ S = Simulacao(env, servidor, tempo_simulado) # cria uma instância da classe
+S = Simulacao(env, servidor, 250) # cria uma instância da classe
 
 env.process(S.Chegadas()) # inclui o processo de chegadas como parte do processo de simulação
 env.run(until=S.tempo_simulacao) # executa a simulação por um determinado período de tempo
